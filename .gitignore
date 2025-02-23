@@ -1,1 +1,2 @@
 neuralmed-recognition/public/yolov7-p6-bonefracture.onnx
+neuralmed-recognition/public/*.onnx
