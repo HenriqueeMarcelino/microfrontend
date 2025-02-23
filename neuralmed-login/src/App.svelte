@@ -101,7 +101,7 @@
   </div>
 
   {#if showRecognition}
-  asd
+
     <RecognitionWrapper />
   {/if}
 </main>

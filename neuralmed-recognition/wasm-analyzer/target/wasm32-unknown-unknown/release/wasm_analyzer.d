@@ -1,0 +1,1 @@
+/mnt/c/PJ/Microfront/neuralmed-recognition/wasm-analyzer/target/wasm32-unknown-unknown/release/wasm_analyzer.wasm: /mnt/c/PJ/Microfront/neuralmed-recognition/wasm-analyzer/js/onnx_inference.js /mnt/c/PJ/Microfront/neuralmed-recognition/wasm-analyzer/src/lib.rs

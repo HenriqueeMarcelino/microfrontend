@@ -1,22 +1,43 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import init, { analyze_image } from "../wasm-analyzer/pkg/wasm_analyzer.js"; // Importando o WebAssembly
 
 const selectedCategory = ref("");
 const imagePreview = ref("");
+const imageBytes = ref(null);
+const analysisResult = ref("");
 
-const handleFileUpload = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      imagePreview.value = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
+// 🔹 Inicializa o WebAssembly assim que o componente Vue for montado
+onMounted(async () => {
+  await init();
+});
+
+const handleFileUpload = (uploadFile) => {
+  const file = uploadFile.raw;
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    const arrayBuffer = e.target.result;
+    imageBytes.value = new Uint8Array(arrayBuffer);
+
+    // 🔹 Criando um Blob URL para exibir no <img>
+    const blob = new Blob([arrayBuffer], { type: file.type });
+    imagePreview.value = URL.createObjectURL(blob);
+  };
+
+  reader.readAsArrayBuffer(file);
 };
 
-const analyzeImage = () => {
-  alert(`Analisando imagem na categoria: ${selectedCategory.value}`);
+const analyzeImage = async () => {
+  if (!imageBytes.value) {
+    alert("Por favor, envie uma imagem válida.");
+    return;
+  }
+
+  // Chamando o WebAssembly para processar a imagem
+  analysisResult.value = await analyze_image(imageBytes.value);
 };
 </script>
 
@@ -29,7 +50,15 @@ const analyzeImage = () => {
         <el-option label="Câncer" value="cancer" />
       </el-select>
 
-      <el-upload class="upload-demo" drag action="" :auto-upload="false" :show-file-list="false" accept="image/*" @change="handleFileUpload">
+      <el-upload
+        class="upload-demo"
+        drag
+        action=""
+        :auto-upload="false"
+        :show-file-list="false"
+        accept="image/*"
+        @change="handleFileUpload"
+      >
         <i class="el-icon-upload"></i>
         <div class="el-upload__text">Arraste uma imagem ou <em>clique para selecionar</em></div>
       </el-upload>
@@ -42,44 +71,18 @@ const analyzeImage = () => {
       <el-button class="button" type="primary" :disabled="!selectedCategory || !imagePreview" @click="analyzeImage">
         Analisar Imagem
       </el-button>
+
+      <div v-if="analysisResult">
+        <h3>Resultado da Análise:</h3>
+        <p>{{ analysisResult }}</p>
+      </div>
     </el-card>
   </div>
 </template>
 
-<script>
-import { ref } from "vue";
-
-export default {
-  setup() {
-    const selectedCategory = ref("");
-    const imagePreview = ref("");
-
-    const handleFileUpload = (file) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        imagePreview.value = event.target.result;
-      };
-      reader.readAsDataURL(file.raw);
-    };
-
-    const analyzeImage = () => {
-      alert(`Analisando imagem na categoria: ${selectedCategory.value}`);
-    };
-
-    return {
-      selectedCategory,
-      imagePreview,
-      handleFileUpload,
-      analyzeImage,
-    };
-  },
-};
-</script>
-
 <style>
 .container {
     font-family: 'Helvetica Neue', sans-serif;
-
   display: flex;
   justify-content: center;
   align-items: center;
@@ -102,11 +105,11 @@ export default {
   border-radius: 10px;
 }
 
-.upload-demo{
+.upload-demo {
   margin-top: 10px;
 }
 
-.button{
+.button {
   margin-top: 10px;
 }
 </style>

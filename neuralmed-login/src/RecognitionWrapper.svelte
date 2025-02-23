@@ -1,25 +1,34 @@
+<!-- neuralmed-login/src/lib/RecognitionWrapper.svelte -->
 <script>
-  import { onMount } from "svelte";
+  import { onMount } from 'svelte';
+  import { onDestroy } from 'svelte';
 
-  let RecognitionLoaded = false;
+  let container;
 
-  async function loadRecognition() {
+  onMount(async () => {
     try {
-      await import("http://172.29.156.167:3000/assets/remoteEntry.js"); // Importa o Microfrontend Vue
-      RecognitionLoaded = true;
-      console.log("✅ Microfrontend Vue carregado!");
-    } catch (error) {
-      console.error("Erro ao carregar Vue:", error);
-    }
-  }
+      // Importa o remoteEntry.js
+      await import('http://localhost:3000/assets/remoteEntry.js');
 
-  onMount(() => {
-    loadRecognition();
+      // Aguarda um pequeno intervalo para garantir que o módulo remoto esteja disponível
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Importa o componente exposto
+      const remoteModule = await import('recognition/Recognition');
+      const RecognitionComponent = remoteModule.default;
+
+      // Cria uma instância do componente Vue
+      const app = Vue.createApp(RecognitionComponent);
+      app.mount(container);
+
+      // Limpeza na desmontagem
+      onDestroy(() => {
+        app.unmount();
+      });
+    } catch (error) {
+      console.error('Erro ao carregar o componente remoto:', error);
+    }
   });
 </script>
 
-{#if RecognitionLoaded}
-  <recognition-element></recognition-element>
-{:else}
-  <p>Carregando o microfrontend de reconhecimento...</p>
-{/if}
+<div bind:this={container}></div>
