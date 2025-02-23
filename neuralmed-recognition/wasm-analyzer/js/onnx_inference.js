@@ -88,7 +88,7 @@ export async function run_onnx_inference(imageData) {
         const classId = Math.floor(detections[5]);
         
         // Verificar se a confiança é suficiente (por exemplo, acima de 15%)
-        if (confidence > 15) {
+        if (confidence > 50) {
             return `Fratura detectada com ${confidence.toFixed(1)}% de confiança`;
         } else {
             return "Nenhuma fratura detectada com confiança suficiente";

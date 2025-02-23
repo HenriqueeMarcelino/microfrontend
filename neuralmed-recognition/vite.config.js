@@ -9,9 +9,9 @@ export default defineConfig({
       name: 'recognition',
       filename: 'remoteEntry.js',
       exposes: {
-        './App': './src/App.vue',
+        "./Recognition": "./src/main.js", // 🔹 Agora expõe `main.js` ao invés de `App.vue`
       },
-      shared: ['vue'],
+      shared: ["vue", "element-plus"],
     }),
   ],
   publicDir: 'public',
